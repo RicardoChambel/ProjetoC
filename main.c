@@ -11,7 +11,7 @@ typedef struct {
     char obs[50];
 } Contacto;
 
-Contacto agenda[MAX_CONTACTOS];
+Contacto *agenda = NULL;
 int numContactos = 0;
 
 void NC(char input[200]){
@@ -21,7 +21,7 @@ void NC(char input[200]){
             int frase = sscanf(input, "NC %s %s %s %s %[^\n]", newContacto.nome, newContacto.apelido, newContacto.tele, newContacto.email, observacoes);
             if(frase < 1){
                     system("cls");
-                    printf("\n> Formato inv·lido. Formato: NC Nome Apelido Telefone Email Observacoes <\n");
+                    printf("\n> Formato inv√°lido. Formato: NC Nome Apelido Telefone Email Observacoes <\n");
                     return;
             }
 
@@ -30,7 +30,7 @@ void NC(char input[200]){
                 if(strcmp(agenda[i].nome, newContacto.nome) == 0){
                     existeDup = 1;
                     system("cls");
-                    printf("\n> J· existe um contacto com o nome %s <\n", agenda[i].nome);
+                    printf("\n> J√° existe um contacto com o nome %s <\n", agenda[i].nome);
                     break;
                 }
             }
@@ -38,7 +38,13 @@ void NC(char input[200]){
 
             strncpy(newContacto.obs, observacoes, sizeof(newContacto.obs) - 1);
             newContacto.obs[sizeof(newContacto.obs) - 1] = '\0';
+            agenda = realloc(agenda, (numContactos + 1) * sizeof(Contacto));
+            if (agenda == NULL) {
+                printf("\nErro de aloca√ß√£o de mem√≥ria!\n");
+                exit(1);
+            }
             agenda[numContactos++] = newContacto;
+
             system("cls");
             printf("\n> Contacto registado com sucesso\n");
             printf("\n>> ENTER para voltar");
@@ -54,7 +60,7 @@ void PC(char input[200]){
 
             if(frase < 1 || nome[0] == '\0'){
                     system("cls");
-                    printf("\n> Formato inv·lido. Formato: NC Nome <\n");
+                    printf("\n> Formato inv√°lido. Formato: NC Nome <\n");
                     return;
             }
 
@@ -90,7 +96,7 @@ void AC(char input[200]){
         int frase = sscanf(input, "AC %s", nome);
         if(frase < 1 || nome[0] == '\0'){
                 system("cls");
-                printf("\n> Formato inv·lido. Formato: AC Nome <\n");
+                printf("\n> Formato inv√°lido. Formato: AC Nome <\n");
                 return;
         }
 
@@ -105,8 +111,8 @@ void AC(char input[200]){
                    system("cls");
                     printf("\n> Contacto a atualizar : %s <", agenda[i].nome);
                     printf("\n\n> INFO ATUAL DO CONTACTO | Nome e Apelido: %s %s, Telefone: %s, Email:%s, Obs:%s", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
-                    printf("\n\n[1] Atualizar Apelido\n[2] Atualizar Telefone\n[3] Atualizar Email\n[4] Atualizar ObservaÁıes\n[5] Atualizar Sair\n");
-                    printf("\nEscolha uma opÁ„o: ");
+                    printf("\n\n[1] Atualizar Apelido\n[2] Atualizar Telefone\n[3] Atualizar Email\n[4] Atualizar Observa√ß√µes\n[5] Sair\n");
+                    printf("\nEscolha uma op√ß√£o: ");
                     scanf("%d", &opcao);
                     getchar();
 
@@ -134,8 +140,8 @@ void AC(char input[200]){
 
                         case 4:
                             system("cls");
-                            printf("> ObservaÁıes atuais: %s <", agenda[i].obs);
-                            printf("\nNovas observaÁıes: ");
+                            printf("> Observa√ß√µes atuais: %s <", agenda[i].obs);
+                            printf("\nNovas observa√ß√µes: ");
                             fgets(agenda[i].obs, sizeof(agenda[i].obs), stdin);
                             agenda[i].obs[strcspn(agenda[i].obs, "\n")] = '\0';
                             break;
@@ -147,7 +153,7 @@ void AC(char input[200]){
 
                         default:
                             system("cls");
-                            printf("\nOpÁ„o inv·lida!\n");
+                            printf("\nOp√ß√£o inv√°lida!\n");
                     }
                 } while (opcao != 5);
                 break;
@@ -160,7 +166,7 @@ void EC(char input[200]){
     int frase = sscanf(input, "EC %s", nome);
     if(frase < 1 || nome[0] == '\0'){
             system("cls");
-            printf("\n> Formato inv·lido. Formato: EC Nome <\n");
+            printf("\n> Formato inv√°lido. Formato: EC Nome <\n");
             return;
     }
 
@@ -191,10 +197,66 @@ void EC(char input[200]){
 
         if (!encontrado){
                 system("cls");
-                printf("\n> Contacto n„o encontrado <\n");
+                printf("\n> Contacto n√£o encontrado <\n");
                 return;
         }
 }
+
+void EXPC() {
+    char *home = getenv("USERPROFILE");
+    char path[260];
+    sprintf(path, "%s\\desktop\\Contactos.txt", home);
+
+    FILE *ficheiro = fopen(path, "w");
+    if (!ficheiro) {
+        printf("\nErro ao criar o ficheiro!\n");
+        return;
+    }
+
+    for (int i = 0; i < numContactos; i++) {
+        fprintf(ficheiro, "%s;%s;%s;%s;%s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
+    }
+
+    fclose(ficheiro);
+    printf("\n> Exportados %d contactos para: %s\n", numContactos, path);
+}
+
+void IMPC() {
+    char *home = getenv("USERPROFILE");
+    char path[260];
+    sprintf(path, "%s\\desktop\\Contactos.txt", home);
+
+    FILE *ficheiro = fopen(path, "r");
+    if (!ficheiro) {
+        printf("\nErro ao abrir o ficheiro!\n");
+        return;
+    }
+
+    free(agenda);
+    agenda = malloc(MAX_CONTACTOS * sizeof(Contacto));
+    if (agenda == NULL) {
+        printf("\nErro de aloca√ß√£o de mem√≥ria!\n");
+        fclose(ficheiro);
+        return;
+    }
+
+    numContactos = 0;
+    while (numContactos < MAX_CONTACTOS &&
+           fscanf(ficheiro, "%49[^;];%49[^;];%49[^;];%49[^;];%49[^\n]\n",
+                  agenda[numContactos].nome,
+                  agenda[numContactos].apelido,
+                  agenda[numContactos].tele,
+                  agenda[numContactos].email,
+                  agenda[numContactos].obs) == 5) {
+        numContactos++;
+    }
+
+    fclose(ficheiro);
+    printf("\n> Importados %d contactos de: %s\n", numContactos, path);
+}
+
+
+
 
 int main() {
 
@@ -209,17 +271,21 @@ int main() {
         printf("\n ================================================================================================\n");
         printf(" ||                              Agenda de Contactos                                           ||\n");
         printf(" ================================================================================================\n");
-        printf(" ||  NC    |  [Novo Contacto]      - Uso: NC <Nome> <Apelido> <Telefone> <Email> <ObservaÁıes> ||\n");
+        printf(" ||  NC    |  [Novo Contacto]      - Uso: NC <Nome> <Apelido> <Telefone> <Email> <Observa√ß√µes>\n");
         printf(" ================================================================================================\n");
-        printf(" ||  PC    |  [Procurar Contacto]  - Uso: PC <Nome>                                            ||\n");
+        printf(" ||  PC    |  [Procurar Contacto]  - Uso: PC <Nome>\n");
         printf(" ================================================================================================\n");
-        printf(" ||  LC    |  [Listar Contactos]                                                               ||\n");
+        printf(" ||  LC    |  [Listar Contactos]\n");
         printf(" ================================================================================================\n");
-        printf(" ||  AC    |  [Atualizar Contacto] - Uso: AC <Nome>                                            ||\n");
+        printf(" ||  AC    |  [Atualizar Contacto] - Uso: AC <Nome>\n");
         printf(" ================================================================================================\n");
-        printf(" ||  EC    |  [Eliminar Contacto]  - Uso: EC <Nome>                                            ||\n");
+        printf(" ||  EC    |  [Eliminar Contacto]  - Uso: EC <Nome>\n");
         printf(" ================================================================================================\n");
-        printf(" ||  XXX   |  [Sair]                                                                           ||\n");
+        printf(" ||  EXPC  |  [Exportar contactos para ficheiro .txt]\n");
+        printf(" ================================================================================================\n");
+        printf(" ||  IMPC  |  [Importar contactos para ficheiro .txt]\n");
+        printf(" ================================================================================================\n");
+        printf(" ||  XXX   |  [Sair]\n");
         printf(" ================================================================================================\n");
 
         printf("\n > Comando:  ");
@@ -227,10 +293,6 @@ int main() {
         input[strcspn(input, "\n")] = '\0';
 
         if(strncmp(input, "NC", 2) == 0){
-            if(numContactos >= MAX_CONTACTOS){
-                printf("\n> Agenda cheia! <\n");
-                continue;
-            }
             NC(input);
         }else if (strncmp(input, "PC", 2) == 0){
             PC(input);
@@ -244,12 +306,17 @@ int main() {
             system("cls");
             printf("\nA guardar a agenda...\nSayonara!\n");
             continuar = 0;
+        }else if (strcmp(input, "EXPC") == 0){
+            EXPC();
+        }else if (strcmp(input, "IMPC") == 0){
+            IMPC();
         }else{
             system("cls");
-            printf("\n> Comando inv·lido! <\n");
+            printf("\n> Comando inv√°lido! <\n");
         } // FIM DO IF
 
     } // FIM DO LOOP
 
+    free(agenda);
     return 0;
 }
