@@ -213,8 +213,13 @@ void EC(char input[200]){
 
 void EXPC() {
     char *home = getenv("USERPROFILE");
+    if (!home) {
+        printf("\nErro ao obter o folder do user!\n");
+        return;
+    }
+
     char path[260];
-    sprintf(path, "%s\\desktop\\Contactos.txt", home);
+    sprintf(path, "%s\\Desktop\\Contactos.txt", home);
 
     FILE *ficheiro = fopen(path, "w");
     if (!ficheiro) {
@@ -223,7 +228,12 @@ void EXPC() {
     }
 
     for (int i = 0; i < numContactos; i++) {
-        fprintf(ficheiro, "%s;%s;%s;%s;%s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
+        fprintf(ficheiro, "%s;%s;%s;%s;%s\n",
+                agenda[i].nome,
+                agenda[i].apelido,
+                agenda[i].tele,
+                agenda[i].email,
+                agenda[i].obs);
     }
 
     fclose(ficheiro);
@@ -232,8 +242,13 @@ void EXPC() {
 
 void IMPC() {
     char *home = getenv("USERPROFILE");
+    if (!home) {
+        printf("\nErro ao obter o diretório do utilizador.\n");
+        return;
+    }
+
     char path[260];
-    sprintf(path, "%s\\desktop\\Contactos.txt", home);
+    sprintf(path, "%s\\Desktop\\Contactos.txt", home);
 
     FILE *ficheiro = fopen(path, "r");
     if (!ficheiro) {
@@ -241,7 +256,10 @@ void IMPC() {
         return;
     }
 
-    free(agenda);
+    if (agenda != NULL) {
+        free(agenda);
+    }
+
     agenda = malloc(MAX_CONTACTOS * sizeof(Contacto));
     if (agenda == NULL) {
         printf("\nErro de alocação de memória!\n");
@@ -250,19 +268,43 @@ void IMPC() {
     }
 
     numContactos = 0;
-    while (numContactos < MAX_CONTACTOS &&
-           fscanf(ficheiro, "%49[^;];%49[^;];%49[^;];%49[^;];%49[^\n]\n",
-                  agenda[numContactos].nome,
-                  agenda[numContactos].apelido,
-                  agenda[numContactos].tele,
-                  agenda[numContactos].email,
-                  agenda[numContactos].obs) == 5) {
-        numContactos++;
+    char linha[300];
+
+    while (numContactos < MAX_CONTACTOS && fgets(linha, sizeof(linha), ficheiro)) {
+        linha[strcspn(linha, "\n")] = '\0';
+
+        char *campo = strtok(linha, ";");
+        int campoIndex = 0;
+
+        strcpy(agenda[numContactos].nome, "");
+        strcpy(agenda[numContactos].apelido, "");
+        strcpy(agenda[numContactos].tele, "");
+        strcpy(agenda[numContactos].email, "");
+        strcpy(agenda[numContactos].obs, "");
+
+        while (campo != NULL && campoIndex < 5) {
+            switch (campoIndex) {
+                case 0: strncpy(agenda[numContactos].nome, campo, 49); break;
+                case 1: strncpy(agenda[numContactos].apelido, campo, 49); break;
+                case 2: strncpy(agenda[numContactos].tele, campo, 49); break;
+                case 3: strncpy(agenda[numContactos].email, campo, 49); break;
+                case 4: strncpy(agenda[numContactos].obs, campo, 49); break;
+            }
+            campo = strtok(NULL, ";");
+            campoIndex++;
+        }
+
+        if(campoIndex >= 2){
+            numContactos++;
+        }else{
+            printf("\nLinha ignorada (dados insuficientes)");
+        }
     }
 
     fclose(ficheiro);
     printf("\n> Importados %d contactos de: %s\n", numContactos, path);
 }
+
 
 
 
