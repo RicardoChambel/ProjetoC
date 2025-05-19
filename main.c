@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <locale.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAX_CONTACTOS 100
 
@@ -17,10 +19,8 @@ int numContactos = 0;
 void RC(char input[200]){
     Contacto newContacto;
 
-
     char observacoes[50] = "";
-    int frase = sscanf(input, "RC %s %s %s %s %[^\n]", newContacto.nome, newContacto.apelido, newContacto.tele, newContacto.email, observacoes);
-
+    int frase = sscanf(input, "RC %49s %49s %49s %49s %[^\n]", newContacto.nome, newContacto.apelido, newContacto.tele, newContacto.email, observacoes);
 
     if (frase < 4) {
         system("cls");
@@ -28,22 +28,20 @@ void RC(char input[200]){
         return;
     }
 
-
     int existeDup = 0;
-    for(int i = 0; i < numContactos; i++){
-        if(strcmp(agenda[i].nome, newContacto.nome) == 0){
+    for (int i = 0; i < numContactos; i++) {
+        if (strcmp(agenda[i].nome, newContacto.nome) == 0){
             existeDup = 1;
             system("cls");
-            printf("\n> Já existe um contacto com o nome %s <\n", agenda[i].nome);
+            printf("\n> Contacto existente com o nome %s (Posição na Agenda: %d)\n", agenda[i].nome, i + 1);
             break;
         }
     }
-    if (existeDup) return;
 
+    if (existeDup) return;
 
     strncpy(newContacto.obs, observacoes, sizeof(newContacto.obs) - 1);
     newContacto.obs[sizeof(newContacto.obs) - 1] = '\0';
-
 
     agenda = realloc(agenda, (numContactos + 1) * sizeof(Contacto));
     if (agenda == NULL) {
@@ -51,164 +49,171 @@ void RC(char input[200]){
         exit(1);
     }
 
+    if(numContactos < MAX_CONTACTOS){
+        agenda[numContactos++] = newContacto;
+        system("cls");
+        printf("\n> Contacto registado com sucesso\n");
+        printf("\n>> ENTER para voltar");
+        getchar();
+        system("cls");
+    }else{
+        system("cls");
+        printf("\n> Agenda de contactos cheia!\n");
+        printf("\n>> ENTER para voltar");
+        getchar();
+        system("cls");
+    }
 
-    agenda[numContactos++] = newContacto;
-
-    system("cls");
-    printf("\n> Contacto registado com sucesso\n");
-    printf("\n>> ENTER para voltar");
-    getchar();
-    system("cls");
 }
 
 void PC(char input[200]){
-            system("cls");
+    system("cls");
 
-            char apelido[50];
-            int frase = sscanf(input, "PC %s", apelido);
+    char apelido[50];
+    int frase = sscanf(input, "PC %s", apelido);
 
-            if(frase < 1 || apelido[0] == '\0'){
-                    system("cls");
-                    printf("\n> Formato inválido. Formato: NC Apelido <\n");
-                    return;
-            }
+    if (frase < 1 || apelido[0] == '\0') {
+        system("cls");
+        printf("\n> Formato inválido. Formato: PC Apelido\n");
+        return;
+    }
 
-            printf("\n> Contacto a procurar: %s\n", apelido);
-            int encontrado = 0;
+    printf("\n> Contacto a procurar: %s\n", apelido);
+    int encontrado = 0;
 
-            for (int i = 0; i < numContactos; i++) {
-                if (strcmp(agenda[i].apelido, apelido) == 0) {
-                    printf("\nContacto encontrado: %s %s, %s, %s, %s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
-                    encontrado = 1;
-                    break;
-                }
-            }
-            if(encontrado==0) printf("\n> Contacto inexistente.\n");
+    for (int i = 0; i < numContactos; i++) {
+        if (strcmp(agenda[i].apelido, apelido) == 0) {
+            printf("\nContacto encontrado: %s %s, %s, %s, %s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
+            encontrado = 1;
+            break;
+        }
+    }
 
+    if (encontrado == 0) printf("\n> Contacto inexistente.\n");
 }
 
 void LC(){
-     if (numContactos == 0) {
-                system("cls");
-                printf("\nAgenda sem contactos.\n");
-            }else{
-                system("cls");
-                printf("\n> Contactos <\n");
-                for(int i = 0; i < numContactos; i++){
-                    printf("\n> [ID] %d | Nome e Apelido: %s %s, Telefone: %s, Email:%s, Obs:%s", i + 1, agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
-                }
+    if (numContactos == 0) {
+        system("cls");
+        printf("\nAgenda sem contactos.\n");
+    } else {
+        system("cls");
+        printf("\n> Contactos <\n");
+        for (int i = 0; i < numContactos; i++) {
+            printf("\n> [ID] %d | Nome e Apelido: %s %s, Telefone: %s, Email:%s, Obs:%s", i + 1, agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
         }
+    }
 }
 
 void AC(char input[200]){
-        char nome[50];
-        int frase = sscanf(input, "AC %s", nome);
-        if(frase < 1 || nome[0] == '\0'){
+    char nome[50];
+    int frase = sscanf(input, "AC %s", nome);
+    if (frase < 1 || nome[0] == '\0') {
+        system("cls");
+        printf("\n> Formato inválido. Formato: AC Nome\n");
+        return;
+    }
+
+    int encontrado = 0;
+
+    for (int i = 0; i < numContactos; i++) {
+        if (strcmp(agenda[i].nome, nome) == 0) {
+            encontrado = 1;
+            int opcao;
+
+            do {
                 system("cls");
-                printf("\n> Formato inválido. Formato: AC Nome <\n");
-                return;
+                printf("\n> Contacto a atualizar : %s <", agenda[i].nome);
+                printf("\n\n> INFO ATUAL DO CONTACTO | Nome e Apelido: %s %s, Telefone: %s, Email:%s, Obs:%s", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
+                printf("\n\n[1] Atualizar Apelido\n[2] Atualizar Telefone\n[3] Atualizar Email\n[4] Atualizar Observações\n[5] Sair\n");
+                printf("\nEscolha uma opção: ");
+                scanf("%d", &opcao);
+                getchar();
+
+                switch (opcao) {
+                    case 1:
+                        system("cls");
+                        printf("> Apelido atual: %s <", agenda[i].apelido);
+                        printf("\nNovo apelido: ");
+                        scanf("%49s", agenda[i].apelido);
+                        break;
+
+                    case 2:
+                        system("cls");
+                        printf("> Telefone atual: %s <", agenda[i].tele);
+                        printf("\nNovo telefone: ");
+                        scanf("%49s", agenda[i].tele);
+                        break;
+
+                    case 3:
+                        system("cls");
+                        printf("> Email atual: %s <", agenda[i].email);
+                        printf("\nNovo email: ");
+                        scanf("%49s", agenda[i].email);
+                        break;
+
+                    case 4:
+                        system("cls");
+                        printf("> Observações atuais: %s <", agenda[i].obs);
+                        printf("\nNovas observações: ");
+                        fgets(agenda[i].obs, sizeof(agenda[i].obs), stdin);
+                        agenda[i].obs[strcspn(agenda[i].obs, "\n")] = '\0';
+                        break;
+
+                    case 5:
+                        system("cls");
+                        printf("\nContacto atualizado com sucesso.\n");
+                        break;
+
+                    default:
+                        system("cls");
+                        printf("\nOpção inválida!\n");
+                }
+            } while (opcao != 5);
+            break;
         }
-
-        int encontrado = 0;
-
-        for (int i = 0; i < numContactos; i++){
-            if (strcmp(agenda[i].nome, nome) == 0){
-                encontrado = 1;
-                int opcao;
-
-                do{
-                   system("cls");
-                    printf("\n> Contacto a atualizar : %s <", agenda[i].nome);
-                    printf("\n\n> INFO ATUAL DO CONTACTO | Nome e Apelido: %s %s, Telefone: %s, Email:%s, Obs:%s", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
-                    printf("\n\n[1] Atualizar Apelido\n[2] Atualizar Telefone\n[3] Atualizar Email\n[4] Atualizar Observações\n[5] Sair\n");
-                    printf("\nEscolha uma opção: ");
-                    scanf("%d", &opcao);
-                    getchar();
-
-                    switch (opcao) {
-                        case 1:
-                            system("cls");
-                            printf("> Apelido atual: %s <", agenda[i].apelido);
-                            printf("\nNovo apelido: ");
-                            scanf("%49s", agenda[i].apelido);
-                            break;
-
-                        case 2:
-                            system("cls");
-                            printf("> Telefone atual: %s <", agenda[i].tele);
-                            printf("\nNovo telefone: ");
-                            scanf("%49s", agenda[i].tele);
-                            break;
-
-                        case 3:
-                            system("cls");
-                            printf("> Email atual: %s <", agenda[i].email);
-                            printf("\nNovo email: ");
-                            scanf("%49s", agenda[i].email);
-                            break;
-
-                        case 4:
-                            system("cls");
-                            printf("> Observações atuais: %s <", agenda[i].obs);
-                            printf("\nNovas observações: ");
-                            fgets(agenda[i].obs, sizeof(agenda[i].obs), stdin);
-                            agenda[i].obs[strcspn(agenda[i].obs, "\n")] = '\0';
-                            break;
-
-                        case 5:
-                            system("cls");
-                            printf("\nContacto atualizado com sucesso.\n");
-                            break;
-
-                        default:
-                            system("cls");
-                            printf("\nOpção inválida!\n");
-                    }
-                } while (opcao != 5);
-                break;
-            }
-        }
+    }
 }
 
 void EC(char input[200]){
     char nome[50];
     int frase = sscanf(input, "EC %s", nome);
-    if(frase < 1 || nome[0] == '\0'){
-            system("cls");
-            printf("\n> Formato inválido. Formato: EC Nome <\n");
-            return;
+    if (frase < 1 || nome[0] == '\0') {
+        system("cls");
+        printf("\n> Formato inválido. Formato: EC Nome\n");
+        return;
     }
 
     int encontrado = 0;
 
-        for (int i = 0; i < numContactos; i++) {
-            if (strcmp(agenda[i].nome, nome) == 0) {
-                encontrado = 1;
-                printf("Contacto encontrado!\nTem a certeza que pretende eliminar? (s/n)\n>>");
-                char escolha;
-                scanf("%c", &escolha);
-                getchar();
-                if(escolha=='s'){
-                    for (int j = i; j < numContactos - 1; j++) {
-                        agenda[j] = agenda[j + 1];
-                    }
-                    numContactos--;
-                    system("cls");
-                    printf("\n> Contacto eliminado com sucesso <\n");
-                    break;
-                }else{
-                    system("cls");
-                    printf("\n> Cancelado! <\n");
-                    break;
+    for (int i = 0; i < numContactos; i++) {
+        if (strcmp(agenda[i].nome, nome) == 0) {
+            encontrado = 1;
+            printf("Contacto encontrado!\nTem a certeza que pretende eliminar? (s/n)\n>>");
+            char escolha;
+            scanf("%c", &escolha);
+            getchar();
+            if (escolha == 's') {
+                for (int j = i; j < numContactos - 1; j++) {
+                    agenda[j] = agenda[j + 1];
                 }
+                numContactos--;
+                system("cls");
+                printf("\n> Contacto eliminado com sucesso <\n");
+                break;
+            } else {
+                system("cls");
+                printf("\n> Cancelado! <\n");
+                break;
             }
         }
+    }
 
-        if (!encontrado){
-                system("cls");
-                printf("\n> Contacto não encontrado <\n");
-                return;
-        }
+    if (!encontrado) {
+        system("cls");
+        printf("\n> Contacto não encontrado <\n");
+        return;
+    }
 }
 
 void EXPC() {
@@ -262,12 +267,11 @@ void IMPC() {
 
     agenda = malloc(MAX_CONTACTOS * sizeof(Contacto));
     if (agenda == NULL) {
-        printf("\nErro de alocação de memória!\n");
+        printf("\nErro ao fazer malloc memória!\n");
         fclose(ficheiro);
         return;
     }
 
-    numContactos = 0;
     char linha[300];
 
     while (numContactos < MAX_CONTACTOS && fgets(linha, sizeof(linha), ficheiro)) {
@@ -294,9 +298,9 @@ void IMPC() {
             campoIndex++;
         }
 
-        if(campoIndex >= 2){
+        if (campoIndex >= 2) {
             numContactos++;
-        }else{
+        } else {
             printf("\nLinha ignorada (dados insuficientes)");
         }
     }
@@ -305,19 +309,13 @@ void IMPC() {
     printf("\n> Importados %d contactos de: %s\n", numContactos, path);
 }
 
-
-
-
-
 int main() {
-
     setlocale(LC_ALL, "Portuguese");
 
     char input[200];
     int continuar = 1;
 
     while (continuar) {
-
         printf("\n");
         printf("\n ================================================================================================\n");
         printf(" ||                              Agenda de Contactos                                           ||\n");
@@ -343,29 +341,28 @@ int main() {
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = '\0';
 
-        if(strncmp(input, "RC", 2) == 0){
+        if (strncmp(input, "RC", 2) == 0) {
             RC(input);
-        }else if (strncmp(input, "PC", 2) == 0){
+        } else if (strncmp(input, "PC", 2) == 0) {
             PC(input);
-        }else if(strcmp(input, "LC") == 0){
+        } else if (strcmp(input, "LC") == 0) {
             LC();
-        }else if(strncmp(input, "AC", 2) == 0){
+        } else if (strncmp(input, "AC", 2) == 0) {
             AC(input);
-        }else if(strncmp(input, "EC", 2) == 0){
+        } else if (strncmp(input, "EC", 2) == 0) {
             EC(input);
-        }else if(strcmp(input, "XXX") == 0){
+        } else if (strcmp(input, "XXX") == 0) {
             system("cls");
             printf("\nA guardar a agenda...\nSayonara!\n");
             continuar = 0;
-        }else if (strcmp(input, "EXPC") == 0){
+        } else if (strcmp(input, "EXPC") == 0) {
             EXPC();
-        }else if (strcmp(input, "IMPC") == 0){
+        } else if (strcmp(input, "IMPC") == 0) {
             IMPC();
-        }else{
+        } else {
             system("cls");
             printf("\n> Comando inválido! <\n");
         }
-
     }
 
     free(agenda);
