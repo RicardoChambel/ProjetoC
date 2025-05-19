@@ -55,20 +55,20 @@ void NC(char input[200]){
 void PC(char input[200]){
             system("cls");
 
-            char nome[50];
-            int frase = sscanf(input, "PC %s", nome);
+            char apelido[50];
+            int frase = sscanf(input, "PC %s", apelido);
 
-            if(frase < 1 || nome[0] == '\0'){
+            if(frase < 1 || apelido[0] == '\0'){
                     system("cls");
-                    printf("\n> Formato inválido. Formato: NC Nome <\n");
+                    printf("\n> Formato inválido. Formato: NC Apelido <\n");
                     return;
             }
 
-            printf("\n> Contacto a procurar: %s\n", nome);
+            printf("\n> Contacto a procurar: %s\n", apelido);
             int encontrado = 0;
 
             for (int i = 0; i < numContactos; i++) {
-                if (strcmp(agenda[i].nome, nome) == 0) {
+                if (strcmp(agenda[i].apelido, apelido) == 0) {
                     printf("\nContacto encontrado: %s %s, %s, %s, %s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
                     encontrado = 1;
                     break;
@@ -273,7 +273,7 @@ int main() {
         printf(" ================================================================================================\n");
         printf(" ||  NC    |  [Novo Contacto]      - Uso: NC <Nome> <Apelido> <Telefone> <Email> <Observações>\n");
         printf(" ================================================================================================\n");
-        printf(" ||  PC    |  [Procurar Contacto]  - Uso: PC <Nome>\n");
+        printf(" ||  PC    |  [Procurar Contacto]  - Uso: PC <Apelido>\n");
         printf(" ================================================================================================\n");
         printf(" ||  LC    |  [Listar Contactos]\n");
         printf(" ================================================================================================\n");
