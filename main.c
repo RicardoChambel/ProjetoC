@@ -214,7 +214,7 @@ void EC(char input[200]){
 void EXPC() {
     char *home = getenv("USERPROFILE");
     char path[260];
-    sprintf(path, "%s\\desktop\\Contactos.txt", home);
+    sprintf(path, "%s\\Desktop\\Contactos.txt", home);
 
     FILE *ficheiro = fopen(path, "w");
     if (!ficheiro) {
@@ -223,7 +223,7 @@ void EXPC() {
     }
 
     for (int i = 0; i < numContactos; i++) {
-        fprintf(ficheiro, "%s;%s;%s;%s;%s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
+        fprintf(ficheiro, "\n%s;%s;%s;%s;%s", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
     }
 
     fclose(ficheiro);
@@ -233,7 +233,7 @@ void EXPC() {
 void IMPC() {
     char *home = getenv("USERPROFILE");
     char path[260];
-    sprintf(path, "%s\\desktop\\Contactos.txt", home);
+    sprintf(path, "%s\\Desktop\\Contactos.txt", home);
 
     FILE *ficheiro = fopen(path, "r");
     if (!ficheiro) {
@@ -256,7 +256,7 @@ void IMPC() {
                   agenda[numContactos].apelido,
                   agenda[numContactos].tele,
                   agenda[numContactos].email,
-                  agenda[numContactos].obs) == 5) {
+                  agenda[numContactos].obs) >= 1) {
         numContactos++;
     }
 
