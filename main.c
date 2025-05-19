@@ -14,61 +14,70 @@ typedef struct {
 Contacto *agenda = NULL;
 int numContactos = 0;
 
-void NC(char input[200]){
-            Contacto newContacto;
+void RC(char input[200]){
+    Contacto newContacto;
 
-            char observacoes[50];
-            int frase = sscanf(input, "NC %s %s %s %s %[^\n]", newContacto.nome, newContacto.apelido, newContacto.tele, newContacto.email, observacoes);
-            if(frase < 1){
-                    system("cls");
-                    printf("\n> Formato inválido. Formato: NC Nome Apelido Telefone Email Observacoes <\n");
-                    return;
-            }
 
-            int existeDup = 0;
-            for(int i = 0; i < numContactos; i++){
-                if(strcmp(agenda[i].nome, newContacto.nome) == 0){
-                    existeDup = 1;
-                    system("cls");
-                    printf("\n> Já existe um contacto com o nome %s <\n", agenda[i].nome);
-                    break;
-                }
-            }
-            if (existeDup) return;
+    char observacoes[50] = "";
+    int frase = sscanf(input, "RC %s %s %s %s %[^\n]", newContacto.nome, newContacto.apelido, newContacto.tele, newContacto.email, observacoes);
 
-            strncpy(newContacto.obs, observacoes, sizeof(newContacto.obs) - 1);
-            newContacto.obs[sizeof(newContacto.obs) - 1] = '\0';
-            agenda = realloc(agenda, (numContactos + 1) * sizeof(Contacto));
-            if (agenda == NULL) {
-                printf("\nErro de alocação de memória!\n");
-                exit(1);
-            }
-            agenda[numContactos++] = newContacto;
 
+    if (frase < 4) {
+        system("cls");
+        printf("\n> Formato inválido. Formato: RC Nome Apelido Telefone Email [Observacoes]\n");
+        return;
+    }
+
+
+    int existeDup = 0;
+    for(int i = 0; i < numContactos; i++){
+        if(strcmp(agenda[i].nome, newContacto.nome) == 0){
+            existeDup = 1;
             system("cls");
-            printf("\n> Contacto registado com sucesso\n");
-            printf("\n>> ENTER para voltar");
-            getchar();
-            system("cls");
+            printf("\n> Já existe um contacto com o nome %s <\n", agenda[i].nome);
+            break;
+        }
+    }
+    if (existeDup) return;
+
+
+    strncpy(newContacto.obs, observacoes, sizeof(newContacto.obs) - 1);
+    newContacto.obs[sizeof(newContacto.obs) - 1] = '\0';
+
+
+    agenda = realloc(agenda, (numContactos + 1) * sizeof(Contacto));
+    if (agenda == NULL) {
+        printf("\nErro de alocação de memória!\n");
+        exit(1);
+    }
+
+
+    agenda[numContactos++] = newContacto;
+
+    system("cls");
+    printf("\n> Contacto registado com sucesso\n");
+    printf("\n>> ENTER para voltar");
+    getchar();
+    system("cls");
 }
 
 void PC(char input[200]){
             system("cls");
 
-            char nome[50];
-            int frase = sscanf(input, "PC %s", nome);
+            char apelido[50];
+            int frase = sscanf(input, "PC %s", apelido);
 
-            if(frase < 1 || nome[0] == '\0'){
+            if(frase < 1 || apelido[0] == '\0'){
                     system("cls");
-                    printf("\n> Formato inválido. Formato: NC Nome <\n");
+                    printf("\n> Formato inválido. Formato: NC Apelido <\n");
                     return;
             }
 
-            printf("\n> Contacto a procurar: %s\n", nome);
+            printf("\n> Contacto a procurar: %s\n", apelido);
             int encontrado = 0;
 
             for (int i = 0; i < numContactos; i++) {
-                if (strcmp(agenda[i].nome, nome) == 0) {
+                if (strcmp(agenda[i].apelido, apelido) == 0) {
                     printf("\nContacto encontrado: %s %s, %s, %s, %s\n", agenda[i].nome, agenda[i].apelido, agenda[i].tele, agenda[i].email, agenda[i].obs);
                     encontrado = 1;
                     break;
@@ -178,7 +187,7 @@ void EC(char input[200]){
                 printf("Contacto encontrado!\nTem a certeza que pretende eliminar? (s/n)\n>>");
                 char escolha;
                 scanf("%c", &escolha);
-                getchar(); // LIMPAR O BUFFER
+                getchar();
                 if(escolha=='s'){
                     for (int j = i; j < numContactos - 1; j++) {
                         agenda[j] = agenda[j + 1];
@@ -191,9 +200,9 @@ void EC(char input[200]){
                     system("cls");
                     printf("\n> Cancelado! <\n");
                     break;
-                } // FIM DO IF
-            } // FIM DO IF
-        } // FIM DO FOR
+                }
+            }
+        }
 
         if (!encontrado){
                 system("cls");
@@ -266,14 +275,14 @@ int main() {
     int continuar = 1;
 
     while (continuar) {
-        // Menu
+
         printf("\n");
         printf("\n ================================================================================================\n");
         printf(" ||                              Agenda de Contactos                                           ||\n");
         printf(" ================================================================================================\n");
-        printf(" ||  NC    |  [Novo Contacto]      - Uso: NC <Nome> <Apelido> <Telefone> <Email> <Observações>\n");
+        printf(" ||  RC    |  [Novo Contacto]      - Uso: RC <Nome> <Apelido> <Telefone> <Email> <Observações>\n");
         printf(" ================================================================================================\n");
-        printf(" ||  PC    |  [Procurar Contacto]  - Uso: PC <Nome>\n");
+        printf(" ||  PC    |  [Procurar Contacto]  - Uso: PC <Apelido>\n");
         printf(" ================================================================================================\n");
         printf(" ||  LC    |  [Listar Contactos]\n");
         printf(" ================================================================================================\n");
@@ -292,8 +301,8 @@ int main() {
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = '\0';
 
-        if(strncmp(input, "NC", 2) == 0){
-            NC(input);
+        if(strncmp(input, "RC", 2) == 0){
+            RC(input);
         }else if (strncmp(input, "PC", 2) == 0){
             PC(input);
         }else if(strcmp(input, "LC") == 0){
@@ -313,9 +322,9 @@ int main() {
         }else{
             system("cls");
             printf("\n> Comando inválido! <\n");
-        } // FIM DO IF
+        }
 
-    } // FIM DO LOOP
+    }
 
     free(agenda);
     return 0;
